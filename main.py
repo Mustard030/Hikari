@@ -1,9 +1,14 @@
-import asyncio
+from hikari.event import loop
+from hikari.common.paperListen import paperclip
 
 
 async def main():
-    pass
+	loop.call_soon(paperclip)
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+	try:
+		loop.create_task(main())
+		loop.run_forever()
+	except KeyboardInterrupt as ki:
+		loop.stop()
