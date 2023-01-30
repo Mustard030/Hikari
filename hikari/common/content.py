@@ -133,6 +133,15 @@ class Twitter(Content):
 		self.platform = LinkType.TWITTER
 
 
+class Twimg(Content):
+	def __init__(self, url):
+		super().__init__(url)
+		self.platform = LinkType.TWIMG
+
+	async def parse_author(self):
+		self.author = authorinfo.TwimgUser()
+
+
 class Yande(Content):
 	def __init__(self, url):
 		super().__init__(url)
