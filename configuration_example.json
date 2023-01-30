@@ -1,0 +1,61 @@
+// 把配置文件范例复制一份并重命名把"_example"删掉
+{
+  // 数据库连接配置
+  "database": {
+	"host": "127.0.0.1",
+	"port": 3306,
+	"username": "",
+	"password": "",
+	"db_name": ""
+  },
+  // 代理
+  "proxy": {
+	"ip": "http://127.0.0.1",
+	"port": 7890
+  },
+  // 账户密码设置（用于登录网站）
+  "account": {
+	"twitter": {
+	  "username": "",
+	  "password": "",
+	  // 过期时间2027-03
+	  "cookies": {
+		"x_csrf_token": "",
+		"auth_token": "",
+		"authorization": ""
+	  },
+	  "query": {
+		"query_id_Favorite": "lI07N6Otwv1PhnEgXILM7A",
+		"query_id_Unfavorite": "ZYKSe-w7KEslx3JhSIk5LA",
+		"query_id_TweetInfo": "d9VslTaZvKUSOh88ntOT_g"
+	  }
+	},
+	"pixiv": {
+	  "username": "",
+	  "password": "",
+	  "cookies": {
+		"x_csrf_token": "",
+		"PHPSESSID": ""
+	  }
+	}
+  },
+  // 使用服务的apikey
+  "apikey": {
+	// saucenao搜图
+	"saucenao": ""
+  },
+  // 某些默认值
+  "default": {
+	// 保存图片的顶级路径
+	"savePath": "D:\\example\\path"
+  },
+  // 某些开关
+  "setting": {
+	// 监听剪切板（用于自动识别网址）
+	"enablePaperclipListening": true,
+	"favoritedTweetAfterDownload": true,
+	"favoritedPixivAfterDownload": true,
+	// 开启强制下载会导致下载前不检测图片是否存在且完整
+	"forceDownloadMode": false
+  }
+}
