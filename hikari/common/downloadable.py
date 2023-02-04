@@ -4,6 +4,7 @@ import logging
 import os
 import cv2
 import zipfile
+import hashlib
 
 from PIL import Image
 
@@ -75,6 +76,21 @@ class Downloadable:
 
 	def file_check(self):
 		pass
+
+	@property
+	def file_md5(self):
+		"""
+		计算文件的md5
+		"""
+		m = hashlib.md5()  # 创建md5对象
+		with open(self.save_path, 'rb') as f:
+			while True:
+				data = f.read(4096)
+				if not data:
+					break
+				m.update(data)  # 更新md5对象
+
+		return m.hexdigest()  # 返回md5对象
 
 
 class Picture(Downloadable):
