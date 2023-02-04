@@ -8,7 +8,6 @@ from hikari.common.command import Command
 from hikari.common.exceptions import LinktypeNotExistError
 from hikari.common.link import Link
 from hikari.event import create_task
-from hikari.common.datebase import create_link_task_to_database, mark_task_done, mark_task_fail
 
 
 # 解析输入内容
