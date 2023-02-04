@@ -10,15 +10,17 @@ class _Character:
 	TWIMG = "pbs.twimg.com"
 	FANBOX = "fanbox.cc"
 	YANDE = "yande.re"
+	DANBOORU = "danbooru.donmai.us"
 	KEMONO = "www.kemono.party"
 	FANTIA = "fantia.jp"
-
+	# https: // danbooru.donmai.us / posts / 5341574
 	character_list = [
 		PIXIV,
 		# TWITTER,
 		TWIMG,
 		FANBOX,
 		YANDE,
+		DANBOORU,
 		KEMONO,
 		FANTIA
 	]
@@ -29,6 +31,7 @@ class _Character:
 		TWIMG: LinkType.TWIMG,
 		FANBOX: LinkType.FANBOX,
 		YANDE: LinkType.YANDE,
+		DANBOORU: LinkType.DANBOORU,
 		KEMONO: LinkType.KEMONO,
 		FANTIA: LinkType.FANTIA,
 	}

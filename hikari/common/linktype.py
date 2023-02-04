@@ -4,6 +4,7 @@ class LinkType:
 	TWIMG = "twimg"
 	FANBOX = "fanbox"
 	YANDE = "yande"
+	DANBOORU = "danbooru"
 	KEMONO = "kemono"
 	FANTIA = "fantia"
 	NONE = ''
