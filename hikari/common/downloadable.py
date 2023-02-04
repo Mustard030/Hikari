@@ -35,11 +35,13 @@ class Downloadable:
 
 	@property
 	def save_path(self):
-		path = os.path.join(self.folder, self.filename + self.suffix)
+		path = os.path.join(self.folder, self.filename + '.' + self.suffix)
 		return path
 
 	async def create_download_history(self, source, task_id, author_id):
-		self.database_download_id = await datebase.create_download_task(source, self.url, self.save_path, task_id, author_id)
+		self.database_download_id = await datebase.create_download_task(source, self.url, self.save_path, task_id,
+		                                                                author_id
+		                                                                )
 
 	async def mark_download_done(self):
 		await datebase.mark_download_task_done(self.database_download_id)
@@ -76,7 +78,7 @@ class Downloadable:
 
 
 class Picture(Downloadable):
-	def __init__(self, url, folder, filename, suffix='.jpg', force=False):
+	def __init__(self, url, folder, filename, suffix='jpg', force=False):
 		super().__init__(url, folder, filename, suffix, force)
 
 	def file_check(self):
@@ -97,7 +99,7 @@ class Picture(Downloadable):
 
 
 class Video(Downloadable):
-	def __init__(self, url, folder, filename, suffix='.mp4', force=False):
+	def __init__(self, url, folder, filename, suffix='mp4', force=False):
 		super().__init__(url, folder, filename, suffix, force)
 
 	def file_check(self):
@@ -115,7 +117,7 @@ class Video(Downloadable):
 
 
 class ZipFile(Downloadable):
-	def __init__(self, url, folder, filename, suffix='.zip', force=False):
+	def __init__(self, url, folder, filename, suffix='zip', force=False):
 		super().__init__(url, folder, filename, suffix, force)
 
 	def file_check(self):
