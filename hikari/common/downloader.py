@@ -69,8 +69,8 @@ class Downloader:
 
 			# 将文件按大小分解为任务队列
 			queue = asyncio.Queue()
-			# 每个区块1M大小
-			size = 1024 * 10240
+			# 每个区块10M大小
+			size = 10 * 1024 * 1024  # M
 			amount = content_length // size or 1
 			for i in range(amount):
 				start = i * size
