@@ -25,18 +25,26 @@ class AuthorInfo:
 		return int(author_id)
 
 
-# yande找不到固定的作者，直接使用一个作者代替
-class YandeUser(AuthorInfo):
-	def __init__(self):
-		super().__init__(LinkType.YANDE, 'yande', 'yande')
-
-	def generate_save_folder(self):  # yande由于找不到固定的作者，故不设作者文件夹，只使用图片id作为文件名区分
+class NoUserAuthor(AuthorInfo):
+	def generate_save_folder(self):  # 由于找不到固定的作者，故不设作者文件夹，只使用图片id作为文件名区分,图片直接存在平台文件夹下
 		root = config.get("default").get("savePath")
 		folder = os.path.join(root, self.platform)
 		return folder
 
 
-# Twitter的折中方案，只存图片
-class TwimgUser(AuthorInfo):
+# yande找不到固定的作者，直接使用一个作者代替
+class YandeUser(NoUserAuthor):
 	def __init__(self):
-		super(TwimgUser, self).__init__(LinkType.TWIMG, 'twimg', 'twimg')
+		super().__init__(LinkType.YANDE, 'yande', 'yande')
+
+
+# Twitter的折中方案，只存图片
+class DanbooruUser(NoUserAuthor):
+	def __init__(self):
+		super().__init__(LinkType.DANBOORU, 'danbooru', 'danbooru')
+
+
+# Twitter的折中方案，只存图片
+class TwimgUser(NoUserAuthor):
+	def __init__(self):
+		super().__init__(LinkType.TWIMG, 'twimg', 'twimg')
