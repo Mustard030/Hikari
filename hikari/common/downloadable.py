@@ -36,7 +36,7 @@ class Downloadable:
 
 	@property
 	def save_path(self):
-		path = os.path.join(self.folder, self.filename + '.' + self.suffix)
+		path = os.path.join(self.folder, str(self.filename) + '.' + self.suffix)
 		return path
 
 	async def create_download_history(self, source, task_id, author_id):
@@ -65,8 +65,9 @@ class Downloadable:
 			except (Exception, asyncio.TimeoutError):
 				raise
 			else:
-				res = self.file_check()
-				# logging.info(f"{self.save_path} : {res}")
+				self.file_check()
+				self.file_check()
+				# logging.info(f"{self.save_path} : {self.verified}")
 				if not self.verified:  # 文件校验不通过，抛出错误等待重试下载
 					raise FileIOError(self.save_path)
 				else:
