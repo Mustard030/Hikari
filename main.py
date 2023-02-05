@@ -32,3 +32,4 @@ if __name__ == '__main__':
 	finally:
 		config.save()
 		loop.stop()
+		exit()
