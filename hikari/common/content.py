@@ -107,17 +107,17 @@ class Pixiv(Content):
 
 	async def parse_element(self):
 		image_count = self.content_origin_data["body"]["pageCount"]
-		illust_id = self.content_origin_data["body"]["illustId"]
-		self.pixiv_id = illust_id
+		self.pixiv_id = self.content_origin_data["body"]["illustId"]
+
 		save_folder = self.author.generate_save_folder()
 		if image_count == 1:
-			filename = f"{illust_id}_p0"
-			picture = downloadable.Picture(pixiv_proxy_url(illust_id), save_folder, filename)
+			filename = f"{self.pixiv_id}_p0"
+			picture = downloadable.Picture(pixiv_proxy_url(self.pixiv_id), save_folder, filename)
 			self.element_list = [picture]
 		elif image_count > 1:
 			for p in range(image_count):
-				filename = f"{illust_id}_p{p}"
-				picture = downloadable.Picture(pixiv_proxy_url(illust_id, p + 1), save_folder, filename)
+				filename = f"{self.pixiv_id}_p{p}"
+				picture = downloadable.Picture(pixiv_proxy_url(self.pixiv_id, p + 1), save_folder, filename)
 				self.element_list.append(picture)
 
 	async def post_processing(self):
@@ -140,6 +140,29 @@ class Twimg(Content):
 
 	async def parse_author(self):
 		self.author = authorinfo.TwimgUser()
+
+
+class Danbooru(Content):
+	def __init__(self, url):
+		super().__init__(url)
+		self.platform = LinkType.DANBOORU
+
+	async def init(self):
+		res = re.match(r"https://danbooru.donmai.us/posts/(\d+)", self.source_url)
+		url = res.group() + '.json'
+		async with aiohttp.ClientSession() as session:
+			async with session.get(url, proxy=proxy_path()) as response:
+				self.content_origin_data = await response.json()
+
+	async def parse_author(self):
+		self.author = authorinfo.DanbooruUser()
+
+	async def parse_element(self):
+		save_folder = self.author.generate_save_folder()
+		filename = self.content_origin_data['id']
+		file_url = self.content_origin_data['file_url']
+		picture = downloadable.Picture(file_url, save_folder, filename)
+		self.element_list.append(picture)
 
 
 class Yande(Content):
@@ -180,11 +203,15 @@ class Kemono(Content):
 			bare_url = file.get("href")
 			file_name = urllib.parse.unquote(bare_url.split('?f=')[1])
 			if ".mp4" in file_name:
-				video = downloadable.Video(url=self.host + bare_url, folder=save_folder, filename=file_name.removesuffix(".mp4"))
-				self.element_list.append(video)
+				self.element_list.append(downloadable.Video(url=self.host + bare_url, folder=save_folder,
+				                                            filename=file_name.removesuffix(".mp4")
+				                                            )
+				                         )
 			elif ".zip" in file_name:
-				zf = downloadable.ZipFile(url=self.host + bare_url, folder=save_folder, filename=file_name.removesuffix(".zip"))
-				self.element_list.append(zf)
+				self.element_list.append(downloadable.ZipFile(url=self.host + bare_url, folder=save_folder,
+				                                              filename=file_name.removesuffix(".zip")
+				                                              )
+				                         )
 
 		for image in image_list:
 			bare_url = image.get("href")
@@ -203,4 +230,3 @@ class Fanbox(Content):
 	def __init__(self, url):
 		super().__init__(url)
 		self.platform = LinkType.FANBOX
-
