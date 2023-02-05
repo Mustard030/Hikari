@@ -54,6 +54,7 @@ class Link:
 			LinkType.PIXIV: content.Pixiv,
 			LinkType.TWITTER: content.Twitter,
 			LinkType.TWIMG: content.Twimg,
+			LinkType.DANBOORU: content.Danbooru,
 			LinkType.FANBOX: content.Fanbox,
 			LinkType.YANDE: content.Yande,
 			LinkType.KEMONO: content.Kemono,
