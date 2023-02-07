@@ -103,7 +103,7 @@ async def mark_task_fail(reason, taskid) -> bool:
 	return await mysqlobj.execute(UPDATE_TASK_FAIL_SQL, (str(reason), int(taskid),))
 
 
-async def check_duplicated_task(value) -> dict:
+async def check_duplicated_task_by_content(value) -> dict:
 	mysqlobj = await get_mysqlobj()
 	res_list = await mysqlobj.query(CHECK_DUPLICATED_TASK_ID_SQL, (str(value),))
 	if res_list:
