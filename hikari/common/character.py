@@ -11,6 +11,7 @@ class _Character:
 	FANBOX = "fanbox.cc"
 	YANDE = "yande.re"
 	DANBOORU = "danbooru.donmai.us"
+	GELBOORU = "gelbooru.com"
 	KEMONO = "www.kemono.party"
 	FANTIA = "fantia.jp"
 	# https: // danbooru.donmai.us / posts / 5341574
@@ -21,6 +22,7 @@ class _Character:
 		FANBOX,
 		YANDE,
 		DANBOORU,
+		GELBOORU,
 		KEMONO,
 		FANTIA
 	]
@@ -32,6 +34,7 @@ class _Character:
 		FANBOX: LinkType.FANBOX,
 		YANDE: LinkType.YANDE,
 		DANBOORU: LinkType.DANBOORU,
+		GELBOORU: LinkType.GELBOORU,
 		KEMONO: LinkType.KEMONO,
 		FANTIA: LinkType.FANTIA,
 	}
