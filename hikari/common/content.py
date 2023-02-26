@@ -50,7 +50,8 @@ class Content:
             await element.create_download_history(self.source_url, self.link_database_id, author_id)
 
     async def download_elements(self):
-        await asyncio.wait([file.download() for file in self.element_list])
+        async with asyncio.TaskGroup() as tg:
+            [tg.create_task(file.download()) for file in self.element_list]
         self.link_task_done = all([element.verified for element in self.element_list])
 
     async def post_processing(self):
@@ -177,6 +178,29 @@ class Danbooru(Content):
         save_folder = self.author.generate_save_folder()
         filename = self.content_origin_data['id']
         file_url = self.content_origin_data['file_url']
+        picture = downloadable.Picture(file_url, save_folder, filename)
+        self.element_list.append(picture)
+
+
+class Gelbooru(Content):
+    def __init__(self, url):
+        super().__init__(url)
+        self.platform = LinkType.GELBOORU
+
+    async def init(self):
+        res = re.search(r"id=(?P<id>\d+)", self.source_url)
+        url = f"https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&id={res.groupdict().get('id')}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, proxy=proxy_path()) as response:
+                self.content_origin_data = await response.json()
+
+    async def parse_author(self):
+        self.author = authorinfo.GelbooruUser()
+
+    async def parse_element(self):
+        save_folder = self.author.generate_save_folder()
+        filename = self.content_origin_data.get('post')[0]['id']
+        file_url = self.content_origin_data.get('post')[0]['file_url']
         picture = downloadable.Picture(file_url, save_folder, filename)
         self.element_list.append(picture)
 
