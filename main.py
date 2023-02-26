@@ -10,10 +10,14 @@ from hikari.common.paperListen import paperclip
 
 def input_forever():
 	while True:
-		value = input(">>")
-		if value:
-			print(value)
-			loop.create_task(parse(value))
+		try:
+			value = input(">>")
+		except UnicodeDecodeError:
+			pass
+		else:
+			if value:
+				print(value)
+				loop.create_task(parse(value))
 
 
 async def main():
