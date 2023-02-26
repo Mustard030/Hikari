@@ -12,91 +12,92 @@ from hikari.common import content
 
 
 class TaskStatus(Enum):
-	NOT_EXIST = 1
-	EXIST_BUT_NOT_COMPLETE = 2
-	FAIL = 3
-	DONE = 4
+    NOT_EXIST = 1
+    EXIST_BUT_NOT_COMPLETE = 2
+    FAIL = 3
+    DONE = 4
 
 
 class Link:
-	def __init__(self, url: str):
-		self.url = url
-		self.linktype = Character.match(url)  # if not match: raise LinktypeNotExistError
-		self.task_id = 0
-		self.task_done = False
+    def __init__(self, url: str):
+        self.url = url
+        self.linktype = Character.match(url)  # if not match: raise LinktypeNotExistError
+        self.task_id = 0
+        self.task_done = False
 
-	async def create_database_link_task(self):
-		self.task_id = await datebase.create_link_task_to_database(self.url)
-		logging.info(f"识别到链接{self.url}, 已创建下载任务,id={self.task_id}")
+    async def create_database_link_task(self):
+        self.task_id = await datebase.create_link_task_to_database(self.url)
+        logging.info(f"识别到链接{self.url}, 已创建下载任务,id={self.task_id}")
 
-	async def mark_database_link_task_done(self):
-		await datebase.mark_task_done(self.task_id)
-		logging.info(f"链接任务id={self.task_id}已标记完成")
+    async def mark_database_link_task_done(self):
+        await datebase.mark_task_done(self.task_id)
+        logging.info(f"链接任务id={self.task_id}已标记完成")
 
-	async def mark_database_link_task_fail(self, reason: str):
-		await datebase.mark_task_fail(str(reason), self.task_id)
-		logging.info(f"链接任务id={self.task_id}已标记失败，原因为{reason}")
+    async def mark_database_link_task_fail(self, reason: str):
+        await datebase.mark_task_fail(str(reason), self.task_id)
+        logging.info(f"链接任务id={self.task_id}已标记失败，原因为{reason}")
 
-	async def check_duplicated_task(self):
-		res = await datebase.check_duplicated_task_by_content(self.url)
-		if not res:
-			return TaskStatus.NOT_EXIST, {}
-		elif res['complete'] and not res['fail']:
-			self.task_id = res['id']
-			return TaskStatus.DONE, res
-		elif not res['complete'] and not res['fail']:
-			self.task_id = res['id']
-			return TaskStatus.EXIST_BUT_NOT_COMPLETE, res
-		elif res['fail']:
-			self.task_id = res['id']
-			return TaskStatus.FAIL, res
+    async def check_duplicated_task(self):
+        res = await datebase.check_duplicated_task_by_content(self.url)
+        if not res:
+            return TaskStatus.NOT_EXIST, {}
+        elif res['complete'] and not res['fail']:
+            self.task_id = res['id']
+            return TaskStatus.DONE, res
+        elif not res['complete'] and not res['fail']:
+            self.task_id = res['id']
+            return TaskStatus.EXIST_BUT_NOT_COMPLETE, res
+        elif res['fail']:
+            self.task_id = res['id']
+            return TaskStatus.FAIL, res
 
-	async def rebuild_content_element(self):
-		elements_meta = await datebase.query_download_history_by_task_id(self.task_id)
-		for element_meta in elements_meta:
-			pass  # 重建元素
+    async def rebuild_content_element(self):
+        elements_meta = await datebase.query_download_history_by_task_id(self.task_id)
+        for element_meta in elements_meta:
+            pass  # 重建元素
 
-	async def __fetch(self):
-		parse_func = {
-			LinkType.PIXIV: content.Pixiv,
-			LinkType.TWITTER: content.Twitter,
-			LinkType.TWIMG: content.Twimg,
-			LinkType.DANBOORU: content.Danbooru,
-			LinkType.FANBOX: content.Fanbox,
-			LinkType.YANDE: content.Yande,
-			LinkType.KEMONO: content.Kemono,
-			LinkType.FANTIA: content.Fantia
-		}
-		return parse_func.get(self.linktype)(self.url)
+    async def __fetch(self):
+        parse_func = {
+            LinkType.PIXIV: content.Pixiv,
+            LinkType.TWITTER: content.Twitter,
+            LinkType.TWIMG: content.Twimg,
+            LinkType.DANBOORU: content.Danbooru,
+            LinkType.GELBOORU: content.Gelbooru,
+            LinkType.FANBOX: content.Fanbox,
+            LinkType.YANDE: content.Yande,
+            LinkType.KEMONO: content.Kemono,
+            LinkType.FANTIA: content.Fantia
+        }
+        return parse_func.get(self.linktype)(self.url)
 
-	async def start(self, force=False):
-		task_status, task_obj = await self.check_duplicated_task()
-		if task_status is TaskStatus.NOT_EXIST:  # 不存在，开启标准下载流程
-			await self.create_database_link_task()
-			content_obj = await self.__fetch()
-			content_obj.link_database_id = self.task_id
-			try:
-				await content_obj.start()
-			except Exception as e:
-				await self.mark_database_link_task_fail(str(e))
-			self.task_done = content_obj.link_task_done
-			if self.task_done:
-				await self.mark_database_link_task_done()
-		elif task_status is TaskStatus.DONE:
-			if force:
-				# 已完成，但还是有可能文件损坏，找对应的元素重建 逐个检查完整性
-				content_obj = await self.__fetch()
-				content_obj.link_database_id = self.task_id
-				history_list = await datebase.query_download_history_by_task_id(task_obj['id'])
-				for history in history_list:
-					pass
-			else:
-				logging.info(f"{self.url} 已完成，若要强制重试请使用-rf指令")
-		elif task_status is TaskStatus.EXIST_BUT_NOT_COMPLETE:
-			# 没完成也没失败，找找download_history有没有对应元素，对应元素是否完成，
-			logging.info(f"{self.url} 可能正在进行中，若要强制重试请使用-rf指令")
-		elif task_status is TaskStatus.FAIL:
-			logging.info(f"{self.url} 任务失败，失败原因为：{task_obj['reason']}，尝试重建任务")
+    async def start(self, force=False):
+        task_status, task_obj = await self.check_duplicated_task()
+        if task_status is TaskStatus.NOT_EXIST:  # 不存在，开启标准下载流程
+            await self.create_database_link_task()
+            content_obj = await self.__fetch()
+            content_obj.link_database_id = self.task_id
+            try:
+                await content_obj.start()
+            except Exception as e:
+                await self.mark_database_link_task_fail(str(e))
+            self.task_done = content_obj.link_task_done
+            if self.task_done:
+                await self.mark_database_link_task_done()
+        elif task_status is TaskStatus.DONE:
+            if force:
+                # 已完成，但还是有可能文件损坏，找对应的元素重建 逐个检查完整性
+                content_obj = await self.__fetch()
+                content_obj.link_database_id = self.task_id
+                history_list = await datebase.query_download_history_by_task_id(task_obj['id'])
+                for history in history_list:
+                    pass
+            else:
+                logging.info(f"{self.url} 已完成，若要强制重试请使用-rf指令")
+        elif task_status is TaskStatus.EXIST_BUT_NOT_COMPLETE:
+            # 没完成也没失败，找找download_history有没有对应元素，对应元素是否完成，
+            logging.info(f"{self.url} 可能正在进行中，若要强制重试请使用-rf指令")
+        elif task_status is TaskStatus.FAIL:
+            logging.info(f"{self.url} 任务失败，失败原因为：{task_obj['reason']}，尝试重建任务")
 
 # # 对应每个网站的解析方法
 
