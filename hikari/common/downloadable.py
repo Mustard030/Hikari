@@ -65,21 +65,19 @@ class Downloadable:
 		else:
 			downloader = Downloader()
 			logging.info(f"{self.url} 开始下载")
-			try:
-				async with lock:
-					await downloader.download(self.url, self.save_path)
-			except (Exception, asyncio.TimeoutError):
-				raise
+
+			async with lock:
+				await downloader.download(self.url, self.save_path)
+
+			self.file_check()
+			self.file_check()
+			# logging.info(f"{self.save_path} : {self.verified}")
+			if not self.verified:  # 文件校验不通过，抛出错误等待重试下载
+				raise FileIOError(self.save_path)
 			else:
-				self.file_check()
-				self.file_check()
-				# logging.info(f"{self.save_path} : {self.verified}")
-				if not self.verified:  # 文件校验不通过，抛出错误等待重试下载
-					raise FileIOError(self.save_path)
-				else:
-					await self.mark_download_done()
-					logging.info(f"下载任务id={self.database_download_id}已标记完成")
-					logging.info(f"{self.url} 下载成功，已保存到 {self.save_path}")
+				await self.mark_download_done()
+				logging.info(f"下载任务id={self.database_download_id}已标记完成")
+				logging.info(f"{self.url} 下载成功，已保存到 {self.save_path}")
 
 	def file_check(self):
 		pass
