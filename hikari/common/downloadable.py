@@ -2,6 +2,8 @@ import asyncio
 import asyncio.locks as locks
 import logging
 import os
+import zlib
+
 import cv2
 import zipfile
 import hashlib
@@ -17,7 +19,7 @@ lock = locks.Lock()
 
 
 class Downloadable:
-	def __init__(self, url, folder, filename, suffix='', force=False):
+	def __init__(self, url, folder, filename, suffix='', database_download_id=0, force=False, custom_source=''):
 		"""
 
 		:param url: 网络文件url
@@ -31,8 +33,12 @@ class Downloadable:
 		self.filename = filename
 		self.suffix = suffix
 		self.verified = False
-		self.database_download_id = 0
+		self.database_download_id = database_download_id
 		self.force = force
+		self.custom_source = custom_source
+
+	def __str__(self):
+		return f"<[id:{self.database_download_id}]{self.url} -> {self.save_path}>"
 
 	@property
 	def save_path(self):
@@ -95,8 +101,8 @@ class Downloadable:
 
 
 class Picture(Downloadable):
-	def __init__(self, url, folder, filename, suffix='jpg', force=False):
-		super().__init__(url, folder, filename, suffix, force)
+	def __init__(self, url, folder, filename, suffix='jpg', force=False, custom_source=''):
+		super().__init__(url=url, folder=folder, filename=filename, suffix=suffix, force=force, custom_source=custom_source)
 
 	def file_check(self):
 		"""
@@ -116,8 +122,8 @@ class Picture(Downloadable):
 
 
 class Video(Downloadable):
-	def __init__(self, url, folder, filename, suffix='mp4', force=False):
-		super().__init__(url, folder, filename, suffix, force)
+	def __init__(self, url, folder, filename, suffix='mp4', force=False, custom_source=''):
+		super().__init__(url=url, folder=folder, filename=filename, suffix=suffix, force=force, custom_source=custom_source)
 
 	def file_check(self):
 		if not os.path.isfile(self.save_path):
@@ -134,10 +140,15 @@ class Video(Downloadable):
 
 
 class ZipFile(Downloadable):
-	def __init__(self, url, folder, filename, suffix='zip', force=False):
-		super().__init__(url, folder, filename, suffix, force)
+	def __init__(self, url, folder, filename, suffix='zip', force=False, custom_source=''):
+		super().__init__(url=url, folder=folder, filename=filename, suffix=suffix, force=force, custom_source=custom_source)
 
 	def file_check(self):
-		res = zipfile.ZipFile(self.save_path).testzip()
-		self.verified = res is None
-		return self.verified
+		try:
+			res = zipfile.ZipFile(self.save_path).testzip()
+		except (FileNotFoundError, zipfile.BadZipFile, zlib.error):
+			self.verified = False
+			return self.verified
+		else:
+			self.verified = res is None
+			return self.verified

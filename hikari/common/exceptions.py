@@ -39,6 +39,14 @@ class LinkServerRaiseError(BaseError):
 		Exception.__init__(self, self.err_msg, self.err_msg_detail)
 
 
+# 找不到可下载元素
+class CannotFoundElementError(BaseError):
+	def __init__(self, err_msg_detail):
+		self.err_msg = "找不到可下载元素"
+		self.err_msg_detail = err_msg_detail
+		Exception.__init__(self, self.err_msg, self.err_msg_detail)
+
+
 # 文件类型不支持下载时，将抛出此异常
 # 如pixiv的动图
 class FileCanNotDownloadError(BaseError):

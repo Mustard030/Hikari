@@ -25,23 +25,30 @@ class Link:
 		self.task_id = 0
 		self.task_done = False
 
-	async def create_link_task(self):
+	async def create_database_link_task(self):
 		self.task_id = await datebase.create_link_task_to_database(self.url)
 		logging.info(f"识别到链接{self.url}, 已创建下载任务,id={self.task_id}")
 
-	async def mark_link_task_done(self):
+	async def mark_database_link_task_done(self):
 		await datebase.mark_task_done(self.task_id)
 		logging.info(f"链接任务id={self.task_id}已标记完成")
 
+	async def mark_database_link_task_fail(self, reason: str):
+		await datebase.mark_task_fail(str(reason), self.task_id)
+		logging.info(f"链接任务id={self.task_id}已标记失败，原因为{reason}")
+
 	async def check_duplicated_task(self):
-		res = await datebase.check_duplicated_task(self.url)
+		res = await datebase.check_duplicated_task_by_content(self.url)
 		if not res:
 			return TaskStatus.NOT_EXIST, {}
 		elif res['complete'] and not res['fail']:
-			return TaskStatus.DONE, {}
+			self.task_id = res['id']
+			return TaskStatus.DONE, res
 		elif not res['complete'] and not res['fail']:
+			self.task_id = res['id']
 			return TaskStatus.EXIST_BUT_NOT_COMPLETE, res
 		elif res['fail']:
+			self.task_id = res['id']
 			return TaskStatus.FAIL, res
 
 	async def rebuild_content_element(self):
@@ -62,70 +69,36 @@ class Link:
 		}
 		return parse_func.get(self.linktype)(self.url)
 
-	async def start(self):
-		task_status, res = await self.check_duplicated_task()
+	async def start(self, force=False):
+		task_status, task_obj = await self.check_duplicated_task()
 		if task_status is TaskStatus.NOT_EXIST:  # 不存在，开启标准下载流程
-			await self.create_link_task()
+			await self.create_database_link_task()
 			content_obj = await self.__fetch()
 			content_obj.link_database_id = self.task_id
-			await content_obj.start()
+			try:
+				await content_obj.start()
+			except Exception as e:
+				await self.mark_database_link_task_fail(str(e))
 			self.task_done = content_obj.link_task_done
 			if self.task_done:
-				await self.mark_link_task_done()
+				await self.mark_database_link_task_done()
 		elif task_status is TaskStatus.DONE:
-			# 已完成，但还是有可能文件损坏，找对应的元素重建 逐个检查完整性
-			logging.info(f"{self.url} 已完成，若要强制重试请使用-r指令")
+			if force:
+				# 已完成，但还是有可能文件损坏，找对应的元素重建 逐个检查完整性
+				content_obj = await self.__fetch()
+				content_obj.link_database_id = self.task_id
+				history_list = await datebase.query_download_history_by_task_id(task_obj['id'])
+				for history in history_list:
+					pass
+			else:
+				logging.info(f"{self.url} 已完成，若要强制重试请使用-rf指令")
 		elif task_status is TaskStatus.EXIST_BUT_NOT_COMPLETE:
 			# 没完成也没失败，找找download_history有没有对应元素，对应元素是否完成，
-			logging.info(f"{self.url} 可能正在进行中，若要强制重试请使用-r指令")
+			logging.info(f"{self.url} 可能正在进行中，若要强制重试请使用-rf指令")
 		elif task_status is TaskStatus.FAIL:
-			logging.info(f"{self.url} 任务失败，失败原因为：{res['reason']}，尝试重建任务")
+			logging.info(f"{self.url} 任务失败，失败原因为：{task_obj['reason']}，尝试重建任务")
 
 # # 对应每个网站的解析方法
-# async def __fetch_pixiv(self) -> Content:
-# 	# 先获取pixiv的图片基础信息
-# 	if "member_illust.php" in self.url:
-# 		re_result = re.match(r"https?://www.pixiv.net/member_illust.php\?mode=\w+&illust_id=(\d{8,9})", self.url
-# 		                     ).groups()
-# 	else:
-# 		re_result = re.match(r"https?://www.pixiv.net/artworks/(\d{8,9})", self.url).groups()
-# 	pixiv_id = re_result[0]
-# 	pixiv_userinfo_url = pixiv_info_url(pixiv_id)
-#
-# 	async with aiohttp.ClientSession() as session:
-# 		async with session.get(pixiv_userinfo_url, proxy=self.proxy_path) as response:
-# 			resp_json = await response.json()
-#
-# 	# 请求错误处理
-# 	if resp_json["error"] is True:
-# 		raise LinkServerRaiseError(f"{self.url} {resp_json['message']}")
-# 	# 如果是动图则跳过下载
-# 	if (illust_type := resp_json["body"]["illustType"]) != 0:
-# 		raise FileCanNotDownloadError(f"{self.url}不是图片, illustType={illust_type}")
-#
-# 	# 请求正确，获取用户信息
-# 	user_id = resp_json["body"]["userId"]
-# 	user_name = resp_json["body"]["userName"]
-# 	image_count = resp_json["body"]["pageCount"]
-# 	illust_id = resp_json["body"]["illustId"]
-# 	userinfo = AuthorInfo(self.linktype, user_name, user_id)
-# 	content = Content(self.url, userinfo)
-# 	if image_count == 1:
-# 		filename = f"{illust_id}_p0"
-# 		picture = Picture(pixiv_proxy_url(illust_id),
-# 		                  userinfo.generate_save_folder(),
-# 		                  filename
-# 		                  )
-# 		content.element = [picture]
-# 	elif image_count > 1:
-# 		for p in range(image_count):
-# 			filename = f"{illust_id}_p{p}"
-# 			picture = Picture(pixiv_proxy_url(illust_id, p + 1),
-# 			                  userinfo.generate_save_folder(),
-# 			                  filename
-# 			                  )
-# 			content.element.append(picture)
-# 	return content
 
 # async def __fetch_twitter(self) -> Content:
 # 	"""
@@ -190,14 +163,3 @@ class Link:
 #
 # 	return content
 #
-# async def __fetch_fanbox(self) -> Content:
-# 	pass
-#
-# async def __fetch_yande(self) -> Content:
-# 	pass
-#
-# async def __fetch_kemono(self) -> Content:
-# 	pass
-#
-# async def __fetch_fantia(self) -> Content:
-# 	pass

@@ -24,9 +24,10 @@ def retry(times: int = 3, wait: int = 2):
 					# noinspection PyBroadException
 					try:
 						result = await func(*args, **kwargs)
-					except:
+					except Exception as e:
 						last_error = traceback.format_exc()
 						# traceback.print_exc()
+						print(e)
 						print(f"将在{wait}秒后重试{func.__name__}()方法,参数为args={args}, kwargs={kwargs}")
 						await asyncio.sleep(wait)
 					else:
