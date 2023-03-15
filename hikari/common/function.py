@@ -9,7 +9,7 @@ from hikari.common.const import DEFAULT_USER_AGENT, ACCEPT_LANGUAGE
 
 # Network
 def proxy_path():
-	return f"{config.get('proxy').get('ip')}:{config.get('proxy').get('port')}"
+	return f"{config['proxy']['ip']}:{config['proxy']['port']}"
 
 
 # Pixiv
@@ -30,10 +30,10 @@ async def like_pixiv_image(pixiv_id) -> (bool, str):
 	header = {
 		"user-agent": DEFAULT_USER_AGENT,
 		"accept-language": ACCEPT_LANGUAGE,
-		"x-csrf-token": config.get("account").get("pixiv").get("cookies").get("x_csrf_token"),
+		"x-csrf-token": config["account"]["pixiv"]["cookies"]["x_csrf_token"],
 	}
 	cookies = {
-		"PHPSESSID": config.get("account").get("pixiv").get("cookies").get("PHPSESSID"),
+		"PHPSESSID": config["account"]["pixiv"]["cookies"]["PHPSESSID"],
 	}
 	payload = {"illust_id": str(pixiv_id), "restrict": 0, "comment": "", "tags": []}
 	async with aiohttp.ClientSession() as session:
@@ -46,23 +46,23 @@ async def like_pixiv_image(pixiv_id) -> (bool, str):
 # Twitter  封存！！！
 def _twitter_info_url(tweet_id):
 	return TWEET_CONTENT.format(
-			query_id=config.get('account').get('twitter').get('query').get('query_id_TweetInfo'),
+			query_id=config['account']['twitter']['query']['query_id_TweetInfo'],
 			tweet_id=tweet_id
 	)
 
 
 def _twitter_header():
 	header = {
-		"authorization": config.get("account").get("twitter").get("cookies").get("authorization"),
-		"x-csrf-token": config.get("account").get("twitter").get("cookies").get("x_csrf_token"),
+		"authorization": config["account"]["twitter"]["cookies"]["authorization"],
+		"x-csrf-token": config["account"]["twitter"]["cookies"]["x_csrf_token"],
 	}
 	return header
 
 
 def _twitter_cookies():
 	cookies = {
-		"auth_token": config.get("account").get("twitter").get("cookies").get("auth_token"),
-		"ct0": config.get("account").get("twitter").get("cookies").get("x_csrf_token"),
+		"auth_token": config["account"]["twitter"]["cookies"]["auth_token"],
+		"ct0": config["account"]["twitter"]["cookies"]["x_csrf_token"],
 	}
 	return cookies
 
@@ -91,8 +91,8 @@ async def _like_tweet(tweet_id, like=True) -> (bool, str):
 	:param like: True为赞，False为取消赞
 	:return: success, error_message
 	"""
-	query_id_favorite = config.get('account').get('twitter').get('query').get('query_id_Favorite')
-	query_id_unfavorite = config.get('account').get('twitter').get('query').get('query_id_Unfavorite')
+	query_id_favorite = config['account']['twitter']['query']['query_id_Favorite']
+	query_id_unfavorite = config['account']['twitter']['query']['query_id_Unfavorite']
 	query_id = query_id_favorite if like else query_id_unfavorite
 
 	mark_favorite = "FavoriteTweet"

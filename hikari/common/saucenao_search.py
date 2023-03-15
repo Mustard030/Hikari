@@ -65,7 +65,7 @@ class Saucenao:
 		"""
 		self.path = os.path.normpath(path)
 		self.minsim = minsim
-		self.__api_key = config.get("apikey").get("saucenao")
+		self.__api_key = config["apikey"]["saucenao"]
 		self.proxy_path = proxy_path()
 
 	@retry(2)

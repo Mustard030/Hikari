@@ -17,7 +17,7 @@ class AuthorInfo:
         self.userid: str = userid
 
     def generate_save_folder(self):
-        root = config.get("default").get("savePath")
+        root = config["default"]["savePath"]
         save_name = re.sub(r'[:<>|"?*]', "_", self.name)
         folder = os.path.join(root, self.platform, save_name)
         return folder
@@ -34,7 +34,7 @@ class NoUserAuthor(AuthorInfo):
     由于找不到固定的作者，故不设作者文件夹，只使用图片id作为文件名区分,图片直接存在平台文件夹下
     """
     def generate_save_folder(self):
-        root = config.get("default").get("savePath")
+        root = config["default"]["savePath"]
         folder = os.path.join(root, self.platform)
         return folder
 

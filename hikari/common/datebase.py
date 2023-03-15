@@ -17,11 +17,11 @@ class Pymysql:
 			__pool = await aiomysql.create_pool(
 					minsize=5,  # 连接池最小值
 					maxsize=10,  # 连接池最大值
-					host=config.get("database").get("host"),
-					port=config.get("database").get("port"),
-					user=config.get("database").get("username"),
-					password=config.get("database").get("password"),
-					db=config.get("database").get("db_name"),
+					host=config["database"]["host"],
+					port=config["database"]["port"],
+					user=config["database"]["username"],
+					password=config["database"]["password"],
+					db=config["database"]["db_name"],
 					autocommit=True,  # 自动提交模式
 			)
 			self.pool = __pool
