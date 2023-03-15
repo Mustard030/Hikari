@@ -15,6 +15,7 @@ from hikari.common.exceptions import CannotFoundElementError, FileCanNotDownload
     LinktypeNotExistError
 from hikari.common.function import index_generator, like_pixiv_image, pixiv_info_url, pixiv_proxy_url, proxy_path
 from hikari.common.linktype import LinkType
+from hikari.config.hikari_config import config
 
 
 class Content:
@@ -251,6 +252,7 @@ class Yande(Content):
                 html = await response.text()
                 return BeautifulSoup(html, "lxml")
 
+    # 没有父图像(自己就是父图像)或者无关紧要的提示，直接作为源数据
     async def init(self):
         self.content_origin_data = await self.fetch_this_post_html(self.source_url)
         status_notices = self.content_origin_data.findAll('div', class_='status-notice')
@@ -260,20 +262,22 @@ class Yande(Content):
             if 'This post belongs to a parent post' in notice.text:  # 有父图像, 父图像作为源数据传入
                 parent_post_href = notice.find('a').get('href')
                 if post_id := self.yande_post_id(parent_post_href):
-                    self.yande_parent_url = self.yande_post_url(post_id)
+                    self.yande_parent_url = self.yande_post_url(post_id)  # 格式化父图像的url
                     self.content_origin_data = await self.fetch_this_post_html(self.yande_parent_url)
                     return
                 else:
                     raise CannotFoundElementError(f"yande can't find parent post id in \"{parent_post_href}\"")
 
-            elif 'child post' in (notice_text := notice.text):  # 有子图像
-                self.child_posts = re.findall('(\d+)', notice_text)
-
-    # 没有父图像(自己就是父图像)或者无关紧要的提示，直接作为源数据
+    # 此时self.content_origin_data中一定是父图像的页面数据，可以开始解析子图像存在
+    async def preprocess(self):
+        status_notices = self.content_origin_data.findAll('div', class_='status-notice')
+        # 看看提示说了什么
+        for notice in status_notices:
+            if 'child post' in (notice_text := notice.text):  # 有子图像
+                self.child_posts = re.findall(r'(\d+)', notice_text)  # 拿到子图像的id列表
 
     async def parse_element(self):
-        # 现在self.content_origin_data里的一定是父图像的网页内容
-        # 先拿到父图像的网页数据
+        # 现在已经拿到了父图像的网页内容和子图像的id列表
         image_url = self.get_image_url_in_this_page(self.content_origin_data)
         save_folder = self.author.generate_save_folder()
         image = downloadable.Picture(url=image_url, folder=save_folder,
@@ -282,7 +286,7 @@ class Yande(Content):
                                      )
         self.element_list.append(image)
 
-        for child_post_id in self.child_posts:  # 自己不是父图像或单独图像,找出子图像并append到element_list中
+        for child_post_id in self.child_posts:  # 根据子图像的id列表拿到每一个子图像的下载链接
             child_post_url = self.yande_post_url(child_post_id)
             child_html = await self.fetch_this_post_html(child_post_url)
             child_image_url = self.get_image_url_in_this_page(child_html)
@@ -323,26 +327,29 @@ class Kemono(Content):
         index_gen = index_generator()
         post_id = self.re_result['postid']
         save_folder = self.author.generate_save_folder()
-        file_list = self.content_origin_data.findAll('a', class_="post__attachment-link")  # .attrs['href']
+        file_list = self.content_origin_data.findAll('a', class_="post__attachment-link")
         image_list = self.content_origin_data.findAll('a', class_="fileThumb")[self.skip:]
         for file in file_list:
-            bare_url = file.get("href")
-            file_name = urllib.parse.unquote(bare_url.split('?f=')[1])
+            href_url = file.get("href")
+            file_name = urllib.parse.unquote(href_url.split('?f=')[1])
             if ".mp4" in file_name:
-                self.element_list.append(downloadable.Video(url=self.host + bare_url, folder=save_folder,
-                                                            filename=file_name.removesuffix(".mp4")
+                self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
+                                                            filename=file_name.removesuffix(".mp4"),
                                                             )
                                          )
             elif ".zip" in file_name:
-                self.element_list.append(downloadable.ZipFile(url=self.host + bare_url, folder=save_folder,
-                                                              filename=file_name.removesuffix(".zip")
+                self.element_list.append(downloadable.ZipFile(url=href_url, folder=save_folder,
+                                                              filename=file_name.removesuffix(".zip"),
                                                               )
                                          )
 
         for image in image_list:
-            bare_url = image.get("href")
+            href_url = image.get("href")
             file_name = f"{post_id}_p{next(index_gen)}"
-            _image = downloadable.Picture(url=self.host + bare_url, folder=save_folder, filename=file_name)
+            _image = downloadable.Picture(url=href_url,
+                                          folder=save_folder,
+                                          filename=file_name,
+                                          )
             self.element_list.append(_image)
 
 
