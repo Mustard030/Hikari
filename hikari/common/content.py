@@ -149,14 +149,14 @@ class Twimg(Content):
         self.author = authorinfo.TwimgUser()
 
     async def parse_element(self):
-        res = re.match(r"https://pbs.twimg.com/media/(?P<filename>[\w\d_-]+)\?format=\w+&name=", self.source_url)
+        res = re.match(r"https://pbs.twimg.com/media/(?P<filename>[\w\d_-]+)", self.source_url)
         if not res:
             raise LinktypeNotExistError(self.source_url)
 
-        file_url = res.group() + '4096x4096'
+        file_url = res.group() + '?format=png&name=4096x4096'
         filename = res.groupdict().get('filename')
         save_folder = self.author.generate_save_folder()
-        image = downloadable.Picture(url=file_url, folder=save_folder, filename=filename)
+        image = downloadable.Picture(url=file_url, folder=save_folder, filename=filename, suffix='png')
         self.element_list.append(image)
 
 
