@@ -12,66 +12,77 @@ from hikari.event import create_task
 
 # 解析输入内容
 async def parse(value):
-	# 是网络链接则创建解析链接任务
-	if is_link(value):
-		create_task(parse_link(value))
+    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+        value = value[1:-1]
 
-	# 是文件（夹）路径，则解析路径做对应方法
-	elif is_file_path(value):
-		if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
-			value = value[1:-1]
+    # 是网络链接则创建解析链接任务
+    if is_link(value):
+        create_task(parse_link(value))
 
-		# 是文件则调用识图任务上传识图网站
-		if os.path.isfile(value):
-			create_task(parse_file(value))
+    # 是文件（夹）路径，则解析路径做对应方法
+    elif is_file_path(value):
+        # 是文件则调用识图任务上传识图网站
+        if os.path.isfile(value):
+            create_task(parse_file(value))
 
-		# 是文件夹就对每一个文件调用识图任务
-		elif os.path.isdir(value):
-			create_task(parse_folder(value))
+        # 是文件夹就对每一个文件调用识图任务
+        elif os.path.isdir(value):
+            create_task(parse_folder(value))
 
-	# 是命令
-	elif execute_function := parse_command(value):
-		execute_function()
+    # 是命令
+    elif execute_function := parse_command(value):
+        execute_function()
 
 
 # 解析粘贴板内容
 async def parse_paperclip(value):
-	# 是网络链接则创建解析链接任务
-	if is_link(value):
-		create_task(parse_link(value))
+    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+        value = value[1:-1]
+
+    # 是网络链接则创建解析链接任务
+    if is_link(value):
+        create_task(parse_link(value))
+
+    # 是文件（夹）路径，则解析路径做对应方法
+    elif is_file_path(value):
+        # 是文件则调用识图任务上传识图网站
+        if os.path.isfile(value):
+            create_task(parse_file(value))
 
 
 def is_file_path(value: str):
-	return os.path.exists(value)
+    return os.path.exists(value)
 
 
 async def parse_file(value):
-	create_task()
+    new_file_name = value.replace("【网课免费提供+微信：xwzkysp2024，公众号：小丸子考研铺】", '')
+    os.rename(value, new_file_name)
 
 
 async def parse_folder(value):
-	top_dir = list(os.walk(value))[0]
-	root, dirs, files = top_dir
-	for file in files:
-		pass
+    top_dir = list(os.walk(value))[0]
+    root, dirs, files = top_dir
+    for file in files:
+        pass
 
 
 def parse_command(value):
-	cmd_dict = {
-		"#": Command.changePaperclipListening,
-	}
-	return cmd_dict.get(value, Command.doNothing)
+    cmd_dict = {
+        "#": Command.changePaperclipListening,
+    }
+    return cmd_dict.get(value, Command.doNothing)
 
 
 def is_link(value: str):
-	return value.startswith(r"http://") or value.startswith(r"https://")
+    return value.startswith(r"http://") or value.startswith(r"https://")
 
 
 async def parse_link(value):
-	# 创建Link类对象，并且自动判别链接类型及平台
-	try:  # 绕过统一错误处理，只显示简单信息
-		link = Link(value)  # if not match any link character, it will raise LinktypeNotExistError and print traceback info
-	except LinktypeNotExistError as e:
-		logging.info(e)
-	else:
-		await link.start()
+    # 创建Link类对象，并且自动判别链接类型及平台
+    try:  # 绕过统一错误处理，只显示简单信息
+        link = Link(
+            value)  # if not match any link character, it will raise LinktypeNotExistError and print traceback info
+    except LinktypeNotExistError as e:
+        logging.info(e)
+    else:
+        await link.start()
