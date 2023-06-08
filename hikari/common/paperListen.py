@@ -6,7 +6,10 @@ from hikari.config.hikari_config import config
 
 def paperclip(last=None):
 	if last is None:
-		last = pyperclip.paste().strip()
+		try:
+			last = pyperclip.paste().strip()
+		except pyperclip.PyperclipWindowsException:
+			last = ''
 
 	try:
 		data = pyperclip.paste().strip()
