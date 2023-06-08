@@ -73,8 +73,8 @@ class Link:
     async def start(self, force=False):
         task_status, task_obj = await self.check_duplicated_task()
         if task_status is TaskStatus.NOT_EXIST:  # 不存在，开启标准下载流程
+            content_obj = await self.__fetch()  # 先走url判断再创建数据库行，可以避免错误格式url被存入数据库
             await self.create_database_link_task()
-            content_obj = await self.__fetch()
             content_obj.link_database_id = self.task_id
             try:
                 await content_obj.start()
