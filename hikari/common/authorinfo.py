@@ -11,6 +11,7 @@ class AuthorInfo:
     作者信息
     用于查找数据库作者id和生成保存文件夹
     """
+
     def __init__(self, platform: LinkType, name: str, userid: str):
         self.platform: str = str(platform)
         self.name: str = name
@@ -33,6 +34,7 @@ class NoUserAuthor(AuthorInfo):
     """
     由于找不到固定的作者，故不设作者文件夹，只使用图片id作为文件名区分,图片直接存在平台文件夹下
     """
+
     def generate_save_folder(self):
         root = config["default"]["savePath"]
         folder = os.path.join(root, self.platform)
@@ -49,6 +51,12 @@ class YandeUser(NoUserAuthor):
 class DanbooruUser(NoUserAuthor):
     def __init__(self):
         super().__init__(LinkType.DANBOORU, 'danbooru', 'danbooru')
+
+
+# sankaku平台固定作者
+class SankakuUser(NoUserAuthor):
+    def __init__(self):
+        super().__init__(LinkType.SANKAKU, 'sankaku', 'sankaku')
 
 
 # danbooru平台固定作者
