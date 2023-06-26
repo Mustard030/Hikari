@@ -8,4 +8,5 @@ class LinkType:
 	GELBOORU = "gelbooru"
 	KEMONO = "kemono"
 	FANTIA = "fantia"
+	SANKAKU = "sankaku"
 	NONE = ''
