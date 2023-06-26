@@ -305,11 +305,11 @@ class Yande(Content):
 class Kemono(Content):
     def __init__(self, url, skip=0):
         super().__init__(url)
-        self.re_result = re.match(r"https://www.kemono.party/\w+/user/(?P<userid>\d+)/post/(?P<postid>\d+)",
+        self.re_result = re.match(r"https://(www.)?kemono.(party|su)/\w+/user/(?P<userid>\d+)/post/(?P<postid>\d+)",
                                   self.source_url
                                   ).groupdict()
         self.platform = LinkType.KEMONO
-        self.host = "https://www.kemono.party"
+        self.host = "https://kemono.su"
         self.skip = skip
 
     async def init(self):
