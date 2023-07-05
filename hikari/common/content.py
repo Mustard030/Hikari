@@ -13,7 +13,8 @@ from bs4 import BeautifulSoup
 from hikari.common import downloadable, authorinfo
 from hikari.common.exceptions import CannotFoundElementError, FileCanNotDownloadError, LinkServerRaiseError, \
     LinktypeNotExistError
-from hikari.common.function import index_generator, like_pixiv_image, pixiv_info_url, pixiv_proxy_url, proxy_path
+from hikari.common.function import index_generator, like_pixiv_image, pixiv_info_url, pixiv_proxy_url, proxy_path, \
+    sankaku_info_url, sankaku_post_url
 from hikari.common.linktype import LinkType
 from hikari.config.hikari_config import config
 
