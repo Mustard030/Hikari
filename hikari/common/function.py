@@ -43,6 +43,14 @@ async def like_pixiv_image(pixiv_id) -> (bool, str):
 			return t['error'], t['message']
 
 
+def sankaku_info_url():
+    return SANKAKU_INFO
+
+
+def sankaku_post_url(post_id):
+    return f"https://beta.sankakucomplex.com/zh-CN/post/show/{post_id}"
+
+
 # Twitter  封存！！！
 def _twitter_info_url(tweet_id):
 	return TWEET_CONTENT.format(
