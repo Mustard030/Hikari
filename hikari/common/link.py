@@ -7,7 +7,7 @@ from enum import Enum
 
 from hikari.common import datebase
 from hikari.common.linktype import LinkType
-from hikari.common.character import Character
+from hikari.common.character import Character, match_strategy
 from hikari.common import content
 
 
@@ -21,7 +21,7 @@ class TaskStatus(Enum):
 class Link:
     def __init__(self, url: str):
         self.url = url
-        self.linktype = Character.match(url)  # if not match: raise LinktypeNotExistError
+        self.strategy = match_strategy(url)
         self.task_id = 0
         self.task_done = False
 
@@ -56,24 +56,10 @@ class Link:
         for element_meta in elements_meta:
             pass  # 重建元素
 
-    async def __fetch(self):
-        parse_func = {
-            LinkType.PIXIV: content.Pixiv,
-            LinkType.TWITTER: content.Twitter,
-            LinkType.TWIMG: content.Twimg,
-            LinkType.DANBOORU: content.Danbooru,
-            LinkType.GELBOORU: content.Gelbooru,
-            LinkType.FANBOX: content.Fanbox,
-            LinkType.YANDE: content.Yande,
-            LinkType.KEMONO: content.Kemono,
-            LinkType.FANTIA: content.Fantia
-        }
-        return parse_func.get(self.linktype)(self.url)
-
     async def start(self, force=False):
         task_status, task_obj = await self.check_duplicated_task()
         if task_status is TaskStatus.NOT_EXIST:  # 不存在，开启标准下载流程
-            content_obj = await self.__fetch()  # 先走url判断再创建数据库行，可以避免错误格式url被存入数据库
+            content_obj = self.strategy.get_content(self.url)  # 先走url判断再创建数据库行，可以避免错误格式url被存入数据库
             await self.create_database_link_task()
             content_obj.link_database_id = self.task_id
             try:
@@ -86,7 +72,7 @@ class Link:
         elif task_status is TaskStatus.DONE:
             if force:
                 # 已完成，但还是有可能文件损坏，找对应的元素重建 逐个检查完整性
-                content_obj = await self.__fetch()
+                content_obj = self.strategy.get_content(self.url)
                 content_obj.link_database_id = self.task_id
                 history_list = await datebase.query_download_history_by_task_id(task_obj['id'])
                 for history in history_list:
