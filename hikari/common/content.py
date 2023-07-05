@@ -359,6 +359,56 @@ class Kemono(Content):
             self.element_list.append(_image)
 
 
+class Sankaku(Content):
+    def __init__(self, url):
+        super().__init__(url)
+        self.platform = LinkType.SANKAKU
+        self.author = authorinfo.SankakuUser()
+
+    async def init(self):
+        sankaku_id = re.search(r"show/(\d+)", self.source_url).groups()[0]
+        sankaku_info = sankaku_info_url()
+        query = {
+            "page": 1,
+            "limit": 40,
+            "tags": f"id_range:{sankaku_id}"
+        }
+        async with aiohttp.ClientSession() as session:
+            async with session.get(sankaku_info, params=query, proxy=proxy_path()) as response:
+                temp_resp = await response.json()
+
+                if temp_resp[0]["parent_id"] is not None:  # 有父找父
+                    sankaku_id = temp_resp["parent_id"]
+                    query['tags'] = f"parent:{sankaku_id}"
+                    async with session.get(sankaku_info, params=query, proxy=proxy_path()) as resp:
+                        self.content_origin_data = await resp.json()
+                elif temp_resp[0]["has_children"]:  # 无父有子 链接id就是父id
+                    query['tags'] = f"parent:{sankaku_id}"
+                    async with session.get(sankaku_info, params=query, proxy=proxy_path()) as resp:
+                        self.content_origin_data = await resp.json()
+                else:  # 无父无子 只有自己一张图直接下载
+                    self.content_origin_data = temp_resp
+
+    async def parse_element(self):
+        save_folder = self.author.generate_save_folder()
+        for item in self.content_origin_data:
+            file_name = item["id"]
+            item_post_url = sankaku_post_url(file_name)
+            if item["file_type"] == "image/jpeg":
+                picture = downloadable.Picture(url=item["file_url"], folder=save_folder, filename=file_name,
+                                               custom_source=item_post_url)
+                self.element_list.append(picture)
+            elif item["file_type"] == "video/mp4":
+                video = downloadable.Video(url=item["file_url"], folder=save_folder, filename=file_name,
+                                           custom_source=item_post_url)
+                self.element_list.append(video)
+
+    async def create_download_history(self):
+        author_id = await self.author.get_author_id()
+        for element in self.element_list:
+            await element.create_download_history(element.custom_source, self.link_database_id, author_id)
+
+
 class Fantia(Content):
     def __init__(self, url):
         super().__init__(url)
