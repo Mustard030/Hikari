@@ -337,6 +337,12 @@ class Kemono(Content):
                                                             filename=file_name.removesuffix(".mp4"),
                                                             )
                                          )
+            elif ".mov" in file_name:
+                self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
+                                                            filename=file_name.removesuffix(".mov"),
+                                                            suffix=".mov"
+                                                            )
+                                         )
             elif ".zip" in file_name:
                 self.element_list.append(downloadable.ZipFile(url=href_url, folder=save_folder,
                                                               filename=file_name.removesuffix(".zip"),
