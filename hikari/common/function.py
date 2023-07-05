@@ -1,6 +1,6 @@
 import aiohttp
 
-from hikari.common.const import PIXIV_PROXY_WITH_P, PIXIV_PROXY_WITHOUT_P, PIXIV_INFO_URL, TWEET_CONTENT
+from hikari.common.const import PIXIV_PROXY_WITH_P, PIXIV_PROXY_WITHOUT_P, PIXIV_INFO_URL, TWEET_CONTENT, SANKAKU_INFO
 from hikari.common.decorator import retry
 from hikari.common.exceptions import NetworkError
 from hikari.config.hikari_config import config
