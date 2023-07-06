@@ -1,6 +1,7 @@
 import asyncio
-import aiohttp
 import os
+
+import aiohttp
 
 from hikari.common.exceptions import LinkServerRaiseError
 from hikari.common.function import proxy_path

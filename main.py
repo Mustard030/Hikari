@@ -1,5 +1,6 @@
-import threading
 import logging
+import threading
+
 logging.basicConfig(format="[%(levelname)s][%(asctime)s]: %(message)s ", level=logging.INFO)
 
 from hikari.event import loop

@@ -1,13 +1,11 @@
-import asyncio
 import asyncio.locks as locks
+import hashlib
 import logging
 import os
+import zipfile
 import zlib
 
 import cv2
-import zipfile
-import hashlib
-
 from PIL import Image
 
 from hikari.common import datebase

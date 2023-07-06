@@ -2,13 +2,10 @@
 # Link类主要提供fetch方法，获取链接中的内容
 ###############################################################
 import logging
-
 from enum import Enum
 
 from hikari.common import datebase
-from hikari.common.linktype import LinkType
-from hikari.common.character import Character, match_strategy
-from hikari.common import content
+from hikari.common.character import match_strategy
 
 
 class TaskStatus(Enum):

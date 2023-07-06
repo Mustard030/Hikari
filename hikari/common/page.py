@@ -1,5 +1,4 @@
 from pyppeteer import launch
-from bs4 import BeautifulSoup
 
 from .const import DEFAULT_USER_AGENT
 

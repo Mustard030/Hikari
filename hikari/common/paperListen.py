@@ -1,7 +1,8 @@
 import pyperclip
-from hikari.event import loop
+
 from hikari.common.parse import parse_paperclip
 from hikari.config.hikari_config import config
+from hikari.event import loop
 
 
 def paperclip(last=None):

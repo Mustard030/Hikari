@@ -1,8 +1,8 @@
 import os.path
 import re
 
-from hikari.common.linktype import LinkType
 from hikari.common import datebase
+from hikari.common.linktype import LinkType
 from hikari.config.hikari_config import config
 
 

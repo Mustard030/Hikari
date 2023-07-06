@@ -1,8 +1,8 @@
 import aiomysql
 
+from hikari.common.sqltable import *
 from hikari.config.hikari_config import config
 from hikari.event import loop
-from hikari.common.sqltable import *
 
 g_pool = None
 

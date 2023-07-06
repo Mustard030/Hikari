@@ -5,9 +5,8 @@
 import asyncio
 import logging
 import re
-import aiohttp
 import urllib.parse
-
+import aiohttp
 from bs4 import BeautifulSoup
 
 from hikari.common import downloadable, authorinfo
@@ -16,7 +15,6 @@ from hikari.common.exceptions import CannotFoundElementError, FileCanNotDownload
 from hikari.common.function import index_generator, like_pixiv_image, pixiv_info_url, pixiv_proxy_url, proxy_path, \
     sankaku_info_url, sankaku_post_url
 from hikari.common.linktype import LinkType
-from hikari.config.hikari_config import config
 
 
 class Content:
@@ -335,18 +333,18 @@ class Kemono(Content):
             file_name = urllib.parse.unquote(href_url.split('?f=')[1])
             if ".mp4" in file_name:
                 self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
-                                                            filename=file_name.removesuffix(".mp4"),
+                                                            filename=f"{post_id}_p{next(index_gen)}",
                                                             )
                                          )
             elif ".mov" in file_name:
                 self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
-                                                            filename=file_name.removesuffix(".mov"),
-                                                            suffix=".mov"
+                                                            filename=f"{post_id}_p{next(index_gen)}",
+                                                            suffix="mov"
                                                             )
                                          )
             elif ".zip" in file_name:
                 self.element_list.append(downloadable.ZipFile(url=href_url, folder=save_folder,
-                                                              filename=file_name.removesuffix(".zip"),
+                                                              filename=f"{post_id}_p{next(index_gen)}",
                                                               )
                                          )
 
