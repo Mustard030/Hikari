@@ -5,7 +5,7 @@ import aiohttp
 from PIL import Image
 
 from hikari.common.decorator import retry
-from hikari.common.exceptions import ImageIOError, PathNotExistError
+from hikari.common.exceptions import FileIOError, PathNotExistError
 from hikari.common.function import proxy_path
 from hikari.common.link import Link
 from hikari.config.hikari_config import config
@@ -74,7 +74,7 @@ class Saucenao:
 			image = Image.open(self.path).convert('RGB')
 		except OSError:
 			# logging.warning(f"图片损坏{self.path}")
-			raise ImageIOError(self.path)
+			raise FileIOError(self.path)
 		else:
 			image_data = io.BytesIO()
 			image.save(image_data, format='PNG')

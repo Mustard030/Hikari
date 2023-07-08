@@ -333,18 +333,17 @@ class Kemono(Content):
             file_name = urllib.parse.unquote(href_url.split('?f=')[1])
             if ".mp4" in file_name:
                 self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
-                                                            filename=f"{post_id}_p{next(index_gen)}",
+                                                            filename=f"{post_id}_p{next(index_gen)}"
                                                             )
                                          )
             elif ".mov" in file_name:
                 self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
-                                                            filename=f"{post_id}_p{next(index_gen)}",
-                                                            suffix="mov"
+                                                            filename=f"{post_id}_p{next(index_gen)}"
                                                             )
                                          )
             elif ".zip" in file_name:
                 self.element_list.append(downloadable.ZipFile(url=href_url, folder=save_folder,
-                                                              filename=f"{post_id}_p{next(index_gen)}",
+                                                              filename=f"{post_id}_p{next(index_gen)}"
                                                               )
                                          )
 

@@ -95,7 +95,7 @@ class Downloader:
                 queue.put_nowait([session, path, url, start, headers])
 
             async with asyncio.TaskGroup() as tg:
-                [tg.create_task(self.__down(queue)) for i in range(count)]
+                [tg.create_task(self.__down(queue)) for _ in range(count)]
 
     async def download(self, url, path, count=32):
         """
