@@ -17,7 +17,7 @@ def input_forever():
 			pass
 		else:
 			if value:
-				print(value)
+				# print(value)
 				loop.create_task(parse(value))
 
 
