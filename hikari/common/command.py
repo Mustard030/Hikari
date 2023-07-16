@@ -10,14 +10,14 @@ from hikari.config.hikari_config import config
 
 class Command:
     @staticmethod
-    def changePaperclipListening():
+    def change_paperclip_listening():
         setting = config.listen_paperclip
         setting = not setting
         config.listen_paperclip = setting
         logging.info(f"剪切板监听: {setting}")
 
     @staticmethod
-    def doNothing():
+    def do_nothing():
         pass
 
     @staticmethod

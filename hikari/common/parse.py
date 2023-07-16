@@ -55,6 +55,7 @@ def is_file_path(value: str):
 
 
 async def parse_file(value):
+    # TODO: 替换掉下面的实现
     new_file_name = value.replace("【网课免费提供+微信：xwzkysp2024，公众号：小丸子考研铺】", '')
     os.rename(value, new_file_name)
 
@@ -68,9 +69,10 @@ async def parse_folder(value):
 
 def parse_command(value):
     cmd_dict = {
-        "#": Command.changePaperclipListening,
+        "#": Command.change_paperclip_listening,
+        "mov": Command.to_mov,
     }
-    return cmd_dict.get(value, Command.doNothing)
+    return cmd_dict.get(value, Command.do_nothing)
 
 
 def is_link(value: str):
