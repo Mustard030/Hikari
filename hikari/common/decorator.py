@@ -54,3 +54,14 @@ def retry(times: int = 3, wait: int = 2):
 		return wrapper
 
 	return func_wrapper
+
+
+def function_call_notification(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        print(f"开始执行{func.__name__}({args, kwargs})")
+        res = func(*args, **kwargs)
+        print(f"{func.__name__}({args, kwargs})执行结束")
+        return res
+
+    return wrapper
