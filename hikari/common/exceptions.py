@@ -23,6 +23,13 @@ class NetworkError(BaseError):
         Exception.__init__(self, self.err_msg, self.err_msg_detail)
 
 
+class MyTimeoutError(BaseError):
+    def __init__(self, err_msg_detail):
+        self.err_msg = "请求超时"
+        self.err_msg_detail = err_msg_detail
+        Exception.__init__(self, self.err_msg, self.err_msg_detail)
+
+
 # 判断链接类型时，识别不到链接类型将抛出此异常
 class LinktypeNotExistError(BaseError):
     def __init__(self, err_msg_detail):
