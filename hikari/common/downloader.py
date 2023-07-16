@@ -2,8 +2,9 @@ import asyncio
 import os
 
 import aiohttp
+from aiohttp.client_exceptions import ClientConnectorError
 
-from hikari.common.exceptions import LinkServerRaiseError
+from hikari.common.exceptions import LinkServerRaiseError, MyTimeoutError
 from hikari.common.function import proxy_path
 
 
@@ -107,7 +108,7 @@ class Downloader:
         try:
             await self.__start_async(url, path, count)
             return path
-        except Exception:
+        except* (TimeoutError, ClientConnectorError):
             if os.path.exists(path):
                 os.remove(path)
-            raise
+            raise MyTimeoutError(url)
