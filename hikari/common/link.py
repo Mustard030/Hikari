@@ -6,6 +6,7 @@ from enum import Enum
 
 from hikari.common import datebase
 from hikari.common.character import match_strategy
+from hikari.common.exceptions import OutOfRetryError
 
 
 class TaskStatus(Enum):
@@ -61,8 +62,8 @@ class Link:
             content_obj.link_database_id = self.task_id
             try:
                 await content_obj.start()
-            except Exception as e:
-                await self.mark_database_link_task_fail(str(e))
+            except* Exception as e:
+                await self.mark_database_link_task_fail(str(e.exceptions[0]))
             self.task_done = content_obj.link_task_done
             if self.task_done:
                 await self.mark_database_link_task_done()
