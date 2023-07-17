@@ -1,6 +1,6 @@
 # task
 CREATE_LINK_TASK_SQL = r"""INSERT INTO task (content, fail, complete, create_date) VALUES (%s, 0, 0, now())"""
-UPDATE_TASK_DONE_SQL = r"""UPDATE task SET complete=1, complete_date=now() WHERE id=%s"""
+UPDATE_TASK_DONE_SQL = r"""UPDATE task SET complete=1, complete_date=now(),fail=0,reason=NULL WHERE id=%s"""
 UPDATE_TASK_FAIL_SQL = r"""UPDATE task SET fail=1, reason=%s WHERE id=%s"""
 CHECK_DUPLICATED_TASK_ID_SQL = r"""SELECT `id`, complete, fail, reason FROM task WHERE content=%s LIMIT 1"""
 QUERY_HISTORY_BY_TASK_ID_SQL = r"""SELECT `id`, `source`, url, local_path, complete, task_id, author_id FROM download_history WHERE task_id=%s"""
