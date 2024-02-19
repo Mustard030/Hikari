@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import traceback
+import logging
 
 from hikari.common.exceptions import OutOfRetryError, MyTimeoutError
 
@@ -27,8 +28,8 @@ def retry(times: int = 3, wait: int = 2):
                     except* MyTimeoutError as e:
                         last_error = e.exceptions[0]
                         # traceback.print_exc()
-                        print(last_error)
-                        print(f"将在{wait}秒后重试{func.__name__}()方法,参数为args={str(args[0])}, kwargs={kwargs}")
+                        logging.warning(last_error)
+                        logging.warning(f"将在{wait}秒后重试{func.__name__}()方法,参数为args={str(args[0])}, kwargs={kwargs}")
                         await asyncio.sleep(wait)
                     else:
                         return result
@@ -58,10 +59,10 @@ def retry(times: int = 3, wait: int = 2):
 
 def function_call_notification(func):
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        print(f"开始执行{func.__name__}({args, kwargs})")
-        res = func(*args, **kwargs)
-        print(f"{func.__name__}({args, kwargs})执行结束")
+    async def wrapper(*args, **kwargs):
+        logging.info(f"开始执行{func.__name__}({args, kwargs})")
+        res = await func(*args, **kwargs)
+        logging.info(f"{func.__name__}({args, kwargs})执行结束")
         return res
 
     return wrapper
