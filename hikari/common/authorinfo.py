@@ -1,7 +1,7 @@
 import os.path
 import re
 
-from hikari.common import datebase
+from hikari.common.databases import database_async_functions
 from hikari.common.linktype import LinkType
 from hikari.config.hikari_config import config
 
@@ -12,7 +12,7 @@ class AuthorInfo:
     用于查找数据库作者id和生成保存文件夹
     """
 
-    def __init__(self, platform: LinkType, name: str, userid: str):
+    def __init__(self, platform: LinkType | str, name: str, userid: str):
         self.platform: str = str(platform)
         self.name: str = name
         self.userid: str = userid
@@ -24,9 +24,9 @@ class AuthorInfo:
         return folder
 
     async def get_author_id(self) -> int:
-        author_id = await datebase.query_author_id(self)
+        author_id = await database_async_functions.query_author_id(self)
         if author_id == 0:  # 0代表不存在此作者
-            author_id = await datebase.create_author_data(self)
+            author_id = await database_async_functions.create_author_data(self)
         return int(author_id)
 
 
@@ -69,3 +69,9 @@ class GelbooruUser(NoUserAuthor):
 class TwimgUser(NoUserAuthor):
     def __init__(self):
         super().__init__(LinkType.TWIMG, 'twimg', 'twimg')
+
+
+# Twitter的另一种解析，直接解析TweetDetail
+class TwimgMediaUser(NoUserAuthor):
+    def __init__(self):
+        super().__init__("twimg_media", 'twimg', 'twimg')
