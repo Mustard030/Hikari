@@ -4,6 +4,8 @@ class BaseError(Exception):
         self.err_msg_detail = err_msg_detail
 
     def __str__(self):
+        if len(self.err_msg_detail) > 200:
+            return f"{self.err_msg} {self.err_msg_detail[:50]}...{self.err_msg_detail[-50:]}"
         return f"{self.err_msg} {self.err_msg_detail}"
 
 
@@ -31,7 +33,7 @@ class MyTimeoutError(BaseError):
 
 
 # 判断链接类型时，识别不到链接类型将抛出此异常
-class LinktypeNotExistError(BaseError):
+class LinktypeNotSupportError(BaseError):
     def __init__(self, err_msg_detail):
         self.err_msg = "链接类型错误或不支持"
         self.err_msg_detail = err_msg_detail
