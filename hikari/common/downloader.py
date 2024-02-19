@@ -1,7 +1,7 @@
 import asyncio
+import aiohttp
 import os
 
-import aiohttp
 from aiohttp.client_exceptions import ClientConnectorError
 
 from hikari.common.exceptions import LinkServerRaiseError, MyTimeoutError
@@ -34,7 +34,7 @@ class Downloader:
                                    headers=headers,
                                    cookies=self.__cookies,
                                    proxy=self.proxy_path,
-                                   timeout=20) as resp:
+                                   timeout=50) as resp:
                 with open(path, 'rb+') as f:
                     # 写入位置，指针移到指定位置
                     f.seek(start)
@@ -98,7 +98,7 @@ class Downloader:
             async with asyncio.TaskGroup() as tg:
                 [tg.create_task(self.__down(queue)) for _ in range(count)]
 
-    async def download(self, url, path, count=32):
+    async def download(self, url, path, count=16):
         """
         :param url: 网络地址
         :param path: 保存地址
@@ -108,7 +108,7 @@ class Downloader:
         try:
             await self.__start_async(url, path, count)
             return path
-        except* (TimeoutError, ClientConnectorError):
+        except* (TimeoutError, asyncio.TimeoutError, ClientConnectorError):
             if os.path.exists(path):
                 os.remove(path)
             raise MyTimeoutError(url)
