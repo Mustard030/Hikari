@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 from hikari.common import downloadable, authorinfo
 from hikari.common.exceptions import CannotFoundElementError, FileCanNotDownloadError, LinkServerRaiseError, \
-    LinktypeNotExistError
+    LinktypeNotSupportError
 from hikari.common.function import index_generator, like_pixiv_image, pixiv_info_url, pixiv_proxy_url, proxy_path, \
     sankaku_info_url, sankaku_post_url
 from hikari.common.linktype import LinkType
@@ -150,7 +150,7 @@ class Twimg(Content):
     async def parse_element(self):
         res = re.match(r"https://pbs.twimg.com/media/(?P<filename>[\w\d_-]+)", self.source_url)
         if not res:
-            raise LinktypeNotExistError(self.source_url)
+            raise LinktypeNotSupportError(self.source_url)
 
         file_url = res.group() + '?format=png&name=4096x4096'
         filename = res.groupdict().get('filename')
@@ -176,10 +176,11 @@ class Danbooru(Content):
 
     async def parse_element(self):
         save_folder = self.author.generate_save_folder()
-        filename = self.content_origin_data['id']
-        file_url = self.content_origin_data['file_url']
-        picture = downloadable.Picture(file_url, save_folder, filename)
-        self.element_list.append(picture)
+        if self.content_origin_data['file_ext'] in ['jpg', 'png']:
+            filename = self.content_origin_data['id']
+            file_url = self.content_origin_data['file_url']
+            picture = downloadable.Picture(file_url, save_folder, filename)
+            self.element_list.append(picture)
 
 
 class Gelbooru(Content):
@@ -323,38 +324,43 @@ class Kemono(Content):
         self.author = authorinfo.AuthorInfo(platform=self.platform, name=author_name, userid=author_id)
 
     async def parse_element(self):
-        index_gen = index_generator()
+        index_gen = index_generator(self.skip)
         post_id = self.re_result['postid']
         save_folder = self.author.generate_save_folder()
-        file_list = self.content_origin_data.findAll('a', class_="post__attachment-link")
+        # file_list = self.content_origin_data.findAll('a', class_="post__attachment-link")
         image_list = self.content_origin_data.findAll('a', class_="fileThumb")[self.skip:]
-        for file in file_list:
-            href_url = file.get("href")
-            file_name = urllib.parse.unquote(href_url.split('?f=')[1])
-            if ".mp4" in file_name:
-                self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
-                                                            filename=f"{post_id}_p{next(index_gen)}"
-                                                            )
-                                         )
-            elif ".mov" in file_name:
-                self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
-                                                            filename=f"{post_id}_p{next(index_gen)}"
-                                                            )
-                                         )
-            elif ".zip" in file_name:
-                self.element_list.append(downloadable.ZipFile(url=href_url, folder=save_folder,
-                                                              filename=f"{post_id}_p{next(index_gen)}"
-                                                              )
-                                         )
+        # for file in file_list:
+        #     href_url = file.get("href")
+        #     file_name = urllib.parse.unquote(href_url.split('?f=')[1])
+        #     if ".mp4" in file_name:
+        #         self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
+        #                                                     filename=f"{post_id}_p{next(index_gen)}"
+        #                                                     )
+        #                                  )
+        #     elif ".mov" in file_name:
+        #         self.element_list.append(downloadable.Video(url=href_url, folder=save_folder,
+        #                                                     filename=f"{post_id}_p{next(index_gen)}"
+        #                                                     )
+        #                                  )
+        #     elif ".zip" in file_name:
+        #         self.element_list.append(downloadable.ZipFile(url=href_url, folder=save_folder,
+        #                                                       filename=f"{post_id}_p{next(index_gen)}"
+        #                                                       )
+        #                                  )
 
         for image in image_list:
             href_url = image.get("href")
-            file_name = f"{post_id}_p{next(index_gen)}"
-            _image = downloadable.Picture(url=href_url,
-                                          folder=save_folder,
-                                          filename=file_name,
-                                          )
-            self.element_list.append(_image)
+            file_name = urllib.parse.unquote(href_url.split('?f=')[1])
+            if ".gif" in file_name:
+                self.element_list.append(downloadable.GifFile(url=href_url,
+                                                              folder=save_folder,
+                                                              filename=f"{post_id}_p{next(index_gen)}",
+                                                              ))
+            else:
+                self.element_list.append(downloadable.Picture(url=href_url,
+                                                              folder=save_folder,
+                                                              filename=f"{post_id}_p{next(index_gen)}",
+                                                              ))
 
 
 class Sankaku(Content):
@@ -404,7 +410,9 @@ class Sankaku(Content):
     async def create_download_history(self):
         author_id = await self.author.get_author_id()
         for element in self.element_list:
-            await element.create_download_history(element.custom_source, self.link_database_id, author_id)
+            await element.create_download_history(source=element.custom_source,
+                                                  task_id=self.link_database_id,
+                                                  author_id=author_id)
 
 
 class Fantia(Content):
