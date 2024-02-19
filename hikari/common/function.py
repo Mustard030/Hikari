@@ -54,8 +54,8 @@ def sankaku_post_url(post_id):
 # Twitter  封存！！！
 def _twitter_info_url(tweet_id):
     return TWEET_CONTENT.format(
-        query_id=config['account']['twitter']['query']['query_id_TweetInfo'],
-        tweet_id=tweet_id
+            query_id=config['account']['twitter']['query']['query_id_TweetInfo'],
+            tweet_id=tweet_id
     )
 
 
@@ -171,3 +171,9 @@ def index_generator(start=0):
     while True:
         yield start
         start += 1
+
+
+async def print_yes():
+    import asyncio
+    await asyncio.sleep(0)
+    print("yes")
