@@ -1,12 +1,14 @@
 import logging
 import threading
 
-logging.basicConfig(format="[%(levelname)s][%(asctime)s]: %(message)s ", level=logging.INFO)
-
 from hikari.event import loop
 from hikari.config.hikari_config import config
 from hikari.common.parse import parse
 from hikari.common.paperListen import paperclip
+from hikari.common.scheduler import schedule
+
+logging.basicConfig(format="[%(levelname)s][%(asctime)s]: %(message)s ", level=logging.INFO)
+logging.getLogger('apscheduler.executors.default').propagate = False
 
 
 def input_forever():
@@ -24,6 +26,7 @@ def input_forever():
 async def main():
 	loop.call_soon(paperclip)
 	threading.Thread(target=input_forever, name="input_forever").start()
+	schedule.start()
 
 
 if __name__ == '__main__':
